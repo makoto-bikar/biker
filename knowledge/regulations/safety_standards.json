@@ -1,0 +1,427 @@
+{
+  "version": "1.0.0",
+  "title": "Motorcycle Safety Standards Knowledge",
+  "category": "regulations",
+  "scope": "Japan",
+  "description": "日本で使用される二輪自動車に関係する道路運送車両の保安基準について、主要な規制分野と判断方法を整理するKnowledge。",
+  "last_verified": "2026-09-03",
+
+  "source_policy": {
+    "primary": [
+      "国土交通省",
+      "道路運送車両法",
+      "道路運送車両の保安基準",
+      "道路運送車両の保安基準の細目を定める告示",
+      "道路運送車両の保安基準第2章及び第3章の規定の適用関係の整理のため必要な事項を定める告示"
+    ],
+    "priority": [
+      "官報",
+      "国土交通省の現行法令・告示",
+      "その他の公的機関資料",
+      "メーカー公式資料",
+      "その他の技術資料"
+    ],
+    "rule": "保安基準に関する回答では、公式の現行資料を優先する。"
+  },
+
+  "important_notice": {
+    "text": "このKnowledgeは保安基準の判断に必要な分野と基本原則を整理するものであり、個別車両の法適合性を保証するものではない。",
+    "ai_behavior": [
+      "車検適合を推測で断定しない",
+      "年式・型式・用途・改造内容を確認する",
+      "適用時期が関係する基準は製作年等を確認する",
+      "不明な場合は要確認として扱う",
+      "具体的な数値基準は各専門Knowledgeを参照する"
+    ]
+  },
+
+  "vehicle_category": {
+    "name": "二輪自動車",
+    "definition_note": "保安基準上の二輪自動車に該当する車両を対象とする。",
+    "important": "車両の構造によって適用される区分が異なる場合があるため、車種・構造を確認する。"
+  },
+
+  "standards_categories": {
+
+    "general": {
+      "name": "総則・一般事項",
+      "purpose": "車両に適用される基本的な保安要件を確認する。",
+      "keywords": [
+        "保安基準",
+        "安全基準",
+        "法規",
+        "適法",
+        "基準"
+      ]
+    },
+
+    "dimensions": {
+      "name": "長さ・幅・高さ等",
+      "related_knowledge": "regulations/dimensions.json",
+      "check_items": [
+        "長さ",
+        "幅",
+        "高さ",
+        "車両諸元",
+        "改造による寸法変化"
+      ],
+      "customization_examples": [
+        "ロングフォーク",
+        "ハンドル変更",
+        "フレーム変更",
+        "ホイール変更"
+      ],
+      "rule": "具体的な数値基準はdimensions.jsonを参照する。"
+    },
+
+    "steering": {
+      "name": "操縦装置・かじ取り装置",
+      "check_items": [
+        "ハンドル",
+        "ステアリング機構",
+        "操舵操作",
+        "操作装置",
+        "ケーブル・ホースとの干渉"
+      ],
+      "customization_examples": [
+        "ハンドル交換",
+        "ハンドル位置変更",
+        "ロングフォーク",
+        "ステアリング周辺の改造"
+      ],
+      "related_knowledge": [
+        "custom/handlebars.md",
+        "custom/suspension.md",
+        "safety/general.md",
+        "safety/suspension.md"
+      ]
+    },
+
+    "running_system": {
+      "name": "走行装置",
+      "check_items": [
+        "車輪",
+        "タイヤ",
+        "ホイール",
+        "車軸",
+        "取付状態",
+        "タイヤ空気圧等"
+      ],
+      "related_knowledge": [
+        "regulations/tires_wheels.json",
+        "custom/wheels_tires.md",
+        "safety/general.md"
+      ]
+    },
+
+    "braking": {
+      "name": "制動装置",
+      "check_items": [
+        "ブレーキ装置",
+        "制動性能",
+        "ブレーキ部品",
+        "取付状態",
+        "作動状態"
+      ],
+      "related_knowledge": [
+        "custom/brakes.md",
+        "safety/braking.md"
+      ],
+      "rule": "制動装置は安全に直結するため、改造や不具合について推測で安全と判断しない。"
+    },
+
+    "frame_and_body": {
+      "name": "車枠・車体",
+      "check_items": [
+        "フレーム",
+        "車体",
+        "取付部",
+        "構造",
+        "強度",
+        "構造変更"
+      ],
+      "related_knowledge": [
+        "regulations/structural_modification.json",
+        "custom/compatibility.md",
+        "safety/general.md"
+      ],
+      "rule": "フレーム等の構造変更は高リスクとして扱う。"
+    },
+
+    "lighting": {
+      "name": "灯火装置",
+      "check_items": [
+        "前照灯",
+        "尾灯",
+        "制動灯",
+        "方向指示器",
+        "番号灯",
+        "取付位置",
+        "色",
+        "視認性"
+      ],
+      "related_knowledge": "regulations/lighting.json",
+      "rule": "灯火類の具体的な数値・位置・色などはlighting.jsonを参照する。"
+    },
+
+    "mirrors": {
+      "name": "後写鏡",
+      "check_items": [
+        "ミラー",
+        "後方視界",
+        "取付状態",
+        "位置",
+        "視認性"
+      ],
+      "related_knowledge": "regulations/mirrors.json",
+      "rule": "具体的な要件はmirrors.jsonを参照する。"
+    },
+
+    "exhaust_and_emissions": {
+      "name": "排気・排出ガス関係",
+      "check_items": [
+        "排気装置",
+        "排気ガス",
+        "触媒",
+        "消音器",
+        "排気系統"
+      ],
+      "related_knowledge": [
+        "regulations/exhaust.json",
+        "regulations/noise.json",
+        "custom/exhaust.md"
+      ],
+      "rule": "車両の製作年・型式等によって適用される基準が異なる可能性があるため、個別確認を行う。"
+    },
+
+    "noise": {
+      "name": "騒音防止装置・騒音",
+      "check_items": [
+        "消音器",
+        "排気系",
+        "騒音",
+        "マフラー",
+        "排気音"
+      ],
+      "related_knowledge": [
+        "regulations/noise.json",
+        "custom/exhaust.md"
+      ],
+      "rule": "騒音基準は適用時期や車両区分等を確認して判断する。"
+    },
+
+    "electrical": {
+      "name": "電気装置",
+      "check_items": [
+        "バッテリー",
+        "配線",
+        "電装品",
+        "電気装置",
+        "取付状態"
+      ],
+      "related_knowledge": [
+        "custom/electrical.md",
+        "custom/lighting.md",
+        "safety/electrical.md"
+      ],
+      "rule": "電装品の追加・変更では安全性と保安基準を別々に確認する。"
+    },
+
+    "fuel": {
+      "name": "燃料装置",
+      "check_items": [
+        "燃料タンク",
+        "燃料配管",
+        "燃料供給装置",
+        "燃料漏れ",
+        "取付状態"
+      ],
+      "related_knowledge": [
+        "custom/fuel.md",
+        "safety/fuel.md"
+      ]
+    },
+
+    "exterior_and_projections": {
+      "name": "車体外側・突起等",
+      "check_items": [
+        "車体外側",
+        "突起",
+        "鋭利な部分",
+        "部品の取付状態",
+        "周辺部品との干渉"
+      ],
+      "related_knowledge": [
+        "custom/compatibility.md",
+        "safety/general.md"
+      ],
+      "rule": "外観上問題がなさそうでも、突起や取付状態について適用基準を確認する。"
+    },
+
+    "horn": {
+      "name": "警音器",
+      "check_items": [
+        "ホーン",
+        "警音器",
+        "作動状態",
+        "取付状態"
+      ]
+    },
+
+    "exhaust_gas": {
+      "name": "排出ガス",
+      "check_items": [
+        "排出ガス",
+        "排気装置",
+        "触媒",
+        "燃料供給",
+        "エンジン制御"
+      ],
+      "related_knowledge": [
+        "regulations/exhaust.json",
+        "custom/exhaust.md",
+        "custom/fuel.md"
+      ],
+      "rule": "排出ガス関係の具体的な基準値は対象車両の適用基準を確認してから判断する。"
+    }
+  },
+
+  "modification_principles": {
+
+    "bolt_on": {
+      "description": "ボルトオン部品であっても、保安基準への適合が自動的に保証されるわけではない。",
+      "rule": "部品が装着可能であることと法適合性を分けて判断する。"
+    },
+
+    "universal_parts": {
+      "description": "汎用品は車両ごとの適合性確認が必要。",
+      "check": [
+        "寸法",
+        "取付方法",
+        "操作性",
+        "干渉",
+        "強度",
+        "灯火類",
+        "制動装置",
+        "保安基準"
+      ]
+    },
+
+    "structural_modification": {
+      "description": "フレーム等の構造に関係する改造は特に慎重に扱う。",
+      "examples": [
+        "フレーム切断",
+        "フレーム溶接",
+        "フレーム延長",
+        "スイングアーム変更",
+        "主要取付部変更"
+      ],
+      "related_knowledge": "regulations/structural_modification.json"
+    }
+  },
+
+  "application_by_vehicle": {
+    "principle": "保安基準はすべての車両に一律で同じ条件を単純適用するのではなく、車両区分、製作年、型式、適用関係等を確認する。",
+    "required_information": [
+      "メーカー",
+      "車種",
+      "年式",
+      "型式",
+      "型式指定等の情報",
+      "車両区分",
+      "改造内容"
+    ],
+    "ai_behavior": [
+      "年式不明なら必要に応じて確認する",
+      "型式不明なら必要に応じて確認する",
+      "適用時期が重要な場合は製作年等を確認する",
+      "基準の適用関係が不明な場合は断定しない"
+    ]
+  },
+
+  "decision_flow": [
+    {
+      "step": 1,
+      "action": "車両区分を確認する"
+    },
+    {
+      "step": 2,
+      "action": "メーカー・車種を確認する"
+    },
+    {
+      "step": 3,
+      "action": "年式・型式・世代を確認する"
+    },
+    {
+      "step": 4,
+      "action": "質問対象の部品・改造箇所を特定する"
+    },
+    {
+      "step": 5,
+      "action": "該当する専門regulations Knowledgeを選択する"
+    },
+    {
+      "step": 6,
+      "action": "安全性についてsafety Knowledgeを確認する"
+    },
+    {
+      "step": 7,
+      "action": "車検・構造変更等の手続きが関係する場合はvehicle_inspection.jsonを確認する"
+    },
+    {
+      "step": 8,
+      "action": "適用基準が不明な場合は要確認として回答する"
+    }
+  ],
+
+  "answer_classification": {
+    "confirmed": "公式資料から確認できる内容。",
+    "likely": "一般的には考えられるが、車両や改造内容の確認が必要な内容。",
+    "unknown": "現在のKnowledgeだけでは判断できない内容。",
+    "must_verify": "法適合性または安全性に関係するため、公式機関等への確認が必要な内容。"
+  },
+
+  "important_distinctions": {
+    "compatibility": "部品が車両に装着・機能できるか。",
+    "safety": "改造後に安全に使用できるか。",
+    "regulation": "法令・保安基準等に適合するか。",
+    "inspection": "検査時に基準適合性が確認されるか。",
+    "rule": "compatibility、safety、regulation、inspectionを同じ意味として扱わない。"
+  },
+
+  "knowledge_routing": {
+    "inspection": "regulations/vehicle_inspection.json",
+    "dimensions": "regulations/dimensions.json",
+    "lighting": "regulations/lighting.json",
+    "mirrors": "regulations/mirrors.json",
+    "tires_wheels": "regulations/tires_wheels.json",
+    "exhaust": "regulations/exhaust.json",
+    "noise": "regulations/noise.json",
+    "structural_modification": "regulations/structural_modification.json",
+    "safety": "safety/general.md"
+  },
+
+  "update_policy": {
+    "trigger": [
+      "保安基準の改正",
+      "細目告示の改正",
+      "適用関係告示の改正",
+      "重要な制度変更"
+    ],
+    "rule": "法令・告示が変更された場合は該当Knowledgeを更新する。",
+    "source_note": "国土交通省の公開資料には更新日があるため、Knowledge更新時に確認日と参照元を記録する。"
+  },
+
+  "core_principles": [
+    "保安基準を推測で断定しない。",
+    "車両の年式・型式・区分を確認する。",
+    "適用時期を考慮する。",
+    "具体的な数値基準は専門Knowledgeに分離する。",
+    "部品が付くことと保安基準に適合することは別問題。",
+    "安全性と法適合性は別問題。",
+    "車検合格を保証するような表現を避ける。",
+    "不明な場合は要確認として扱う。",
+    "公式情報を優先する。",
+    "法令・告示が更新された場合はKnowledgeを更新する。"
+  ]
+}

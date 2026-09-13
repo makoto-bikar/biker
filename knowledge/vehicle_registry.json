@@ -1,0 +1,82 @@
+{
+  "version": "1.1.0",
+  "vehicles": [
+    {
+      "manufacturer": "yamaha",
+      "model": "sr400",
+      "displayName": "YAMAHA SR400",
+      "aliases": [
+        "sr400",
+        "sr 400",
+        "ヤマハ sr400",
+        "ヤマハ SR400"
+      ],
+      "knowledge": {
+        "indexPath": "knowledge/manuals/yamaha/sr400/index.md",
+        "systemsPath": "knowledge/manuals/yamaha/sr400/systems"
+      },
+      "generations": [
+        {
+          "id": "type1",
+          "displayName": "Type 1",
+          "modelCodes": [
+            "2H6"
+          ],
+          "aliases": [
+            "type1",
+            "type 1",
+            "2h6"
+          ],
+          "yearFrom": 1978,
+          "yearTo": 1984,
+          "knowledgePath": "knowledge/manuals/yamaha/sr400/generation/type1_2h6.md"
+        },
+        {
+          "id": "type2",
+          "displayName": "Type 2",
+          "modelCodes": [
+            "1JR"
+          ],
+          "aliases": [
+            "type2",
+            "type 2",
+            "1jr"
+          ],
+          "yearFrom": 1985,
+          "yearTo": 2000,
+          "knowledgePath": "knowledge/manuals/yamaha/sr400/generation/type2_1jr.md"
+        },
+        {
+          "id": "type3",
+          "displayName": "Type 3",
+          "modelCodes": [
+            "RH01J"
+          ],
+          "aliases": [
+            "type3",
+            "type 3",
+            "rh01j"
+          ],
+          "yearFrom": 2001,
+          "yearTo": 2008,
+          "knowledgePath": "knowledge/manuals/yamaha/sr400/generation/type3_rh01j.md"
+        },
+        {
+          "id": "type4",
+          "displayName": "Type 4",
+          "modelCodes": [
+            "RH03J"
+          ],
+          "aliases": [
+            "type4",
+            "type 4",
+            "rh03j"
+          ],
+          "yearFrom": 2009,
+          "yearTo": 2017,
+          "knowledgePath": "knowledge/manuals/yamaha/sr400/generation/type4_rh03j.md"
+        }
+      ]
+    }
+  ]
+}

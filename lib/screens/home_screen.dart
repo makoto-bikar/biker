@@ -3,269 +3,660 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../data/questions.dart';
 import '../widgets/chat_input.dart';
-import '../widgets/question_card.dart';
+
 import '../services/openai_service.dart';
 import '../models/chat_message.dart';
 import '../services/firestore_service.dart';
-import 'garage_screen.dart';
+
 import '../widgets/ai_typing_indicator.dart';
-import 'package:bikar/screens/settings_screen.dart';
+import 'settings_screen.dart';
 import 'history_screen.dart';
+import '../services/custom_plan_service.dart';
+import '../widgets/home/home_header.dart';
+
+
+import '../widgets/home/chat_message_item.dart';
+import '../widgets/home/welcome_section.dart';
+
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+
+  final bool startCustomPlan;
+
+  const HomeScreen({
+    super.key,
+    this.startCustomPlan = false,
+  });
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  State<HomeScreen> createState() =>
+      _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+
+class _HomeScreenState
+    extends State<HomeScreen> {
+
+  // =========================================================
+  // Controllers
+  // =========================================================
+
   final TextEditingController controller =
       TextEditingController();
 
   final ScrollController scrollController =
       ScrollController();
 
+
+  // =========================================================
+  // Services
+  // =========================================================
+
   final FirestoreService firestoreService =
       FirestoreService();
 
+
+  // =========================================================
+  // State
+  // =========================================================
+
   bool showScrollToBottom = false;
+
   bool isLoading = false;
+
+  bool customPlanStarted = false;
+
 
   List<String> questions = [];
 
   List<ChatMessage> messages = [];
 
+
+  // メッセージごとの商品
+  List<List<ProductRecommendation>>
+      messageProducts = [];
+
+
+  // メッセージごとのCustom Plan
+  List<CustomPlan?>
+      messageCustomPlans = [];
+
+
   // =========================================================
-  // 各メッセージに紐づく商品
-  //
-  // messages[0] → messageProducts[0]
-  // messages[1] → messageProducts[1]
-  // messages[2] → messageProducts[2]
-  //
-  // ユーザー質問 → []
-  // AI回答 → そのAI回答の商品
+  // Conversation
   // =========================================================
 
-  List<List<ProductRecommendation>> messageProducts = [];
-
-  // 現在の会話ID
   String? conversationId;
+
+
+  // =========================================================
+  // Init
+  // =========================================================
 
   @override
   void initState() {
+
     super.initState();
 
+
     // =======================================================
-    // スクロール位置監視
+    // Scroll監視
     // =======================================================
 
     scrollController.addListener(() {
-      if (!scrollController.hasClients) return;
+
+      if (!scrollController.hasClients) {
+        return;
+      }
+
 
       final isNotBottom =
           scrollController.position.maxScrollExtent -
                   scrollController.position.pixels >
               100;
 
-      if (isNotBottom != showScrollToBottom) {
+
+      if (isNotBottom !=
+          showScrollToBottom) {
+
         setState(() {
-          showScrollToBottom = isNotBottom;
+
+          showScrollToBottom =
+              isNotBottom;
+
         });
       }
     });
 
+
+    // =======================================================
+    // おすすめ質問
+    // =======================================================
+
     loadQuestions();
+
+
+    // =======================================================
+    // Custom Plan自動開始
+    // =======================================================
+
+    if (widget.startCustomPlan) {
+
+      WidgetsBinding.instance
+          .addPostFrameCallback((_) {
+
+        _startCustomPlan();
+
+      });
+    }
   }
 
+
   // =========================================================
-  // おすすめ質問を取得
+  // おすすめ質問取得
   // =========================================================
 
   Future<void> loadQuestions() async {
-    final user =
-        await firestoreService.getLatestUser();
 
-    if (!mounted) return;
+    final user =
+        await firestoreService
+            .getLatestUser();
+
+
+    if (!mounted) {
+      return;
+    }
+
 
     if (user == null) {
+
       setState(() {
+
         questions =
-            QuestionRepository.maintenanceQuestions;
+            QuestionRepository
+                .maintenanceQuestions;
+
       });
 
       return;
     }
 
+
     final newQuestions =
-        QuestionRepository.getQuestionsForUser(
+        QuestionRepository
+            .getQuestionsForUser(
+
       manufacturer:
-          user["manufacturer"]?.toString() ?? "不明",
+          user["manufacturer"]
+                  ?.toString() ??
+              "不明",
 
       bike:
-          user["bike"]?.toString() ?? "不明",
+          user["bike"]
+                  ?.toString() ??
+              "不明",
 
       year:
-          user["year"]?.toString() ?? "不明",
+          user["year"]
+                  ?.toString() ??
+              "不明",
 
       style:
-          user["style"]?.toString() ?? "不明",
+          user["style"]
+                  ?.toString() ??
+              "不明",
 
       experience:
-          user["experience"]?.toString() ?? "不明",
+          user["experience"]
+                  ?.toString() ??
+              "不明",
     );
 
+
     setState(() {
-      questions = newQuestions;
+
+      questions =
+          newQuestions;
+
     });
   }
 
+
   // =========================================================
-  // メッセージ送信
+  // Custom Plan開始
+  //
+  // ここではプロンプトを作らない。
+  // CustomPlanServiceに完全に任せる。
   // =========================================================
 
-  Future<void> onSend() async {
-    if (controller.text.trim().isEmpty) {
+  Future<void> _startCustomPlan() async {
+
+    // 二重実行防止
+    if (customPlanStarted) {
       return;
     }
 
-    final text = controller.text.trim();
 
+    customPlanStarted = true;
+
+
+    if (!mounted) {
+      return;
+    }
+
+
+    setState(() {
+
+      isLoading = true;
+
+    });
+
+
+    try {
+
+      // =====================================================
+      // 新しい会話を作成
+      // =====================================================
+
+      conversationId =
+          await firestoreService
+              .createConversation(
+
+        title:
+            "理想の一台に近づくカスタム",
+
+      );
+
+
+      // =====================================================
+      // CustomPlanService
+      // =====================================================
+
+      final reply =
+          await CustomPlanService
+              .generatePlan(
+
+        conversationId:
+            conversationId,
+
+      );
+
+
+      if (!mounted) {
+        return;
+      }
+
+
+      // =====================================================
+      // AI回答を表示
+      // =====================================================
+
+      setState(() {
+
+        isLoading = false;
+
+
+        messages.add(
+
+          ChatMessage(
+
+            text:
+                reply.answer,
+
+            isUser:
+                false,
+
+          ),
+
+        );
+
+
+        messageProducts.add(
+
+          List<ProductRecommendation>
+              .from(
+            reply.products,
+          ),
+
+        );
+
+
+        messageCustomPlans.add(
+
+          reply.customPlan,
+
+        );
+
+      });
+
+
+      // =====================================================
+      // Firestore保存
+      // =====================================================
+
+      await firestoreService
+          .saveConversationMessage(
+
+        conversationId:
+            conversationId!,
+
+        text:
+            reply.answer,
+
+        isUser:
+            false,
+
+        products:
+            reply.products.map(
+
+          (product) {
+
+            return {
+
+              "name":
+                  product.name,
+
+              "category":
+                  product.category,
+
+              "reason":
+                  product.reason,
+
+              "searchQuery":
+                  product.searchQuery,
+
+            };
+
+          },
+
+        ).toList(),
+
+      );
+
+
+      // =====================================================
+      // 一番下へ
+      // =====================================================
+
+      _scrollToBottom();
+
+
+    } catch (e) {
+
+      print(
+        "Custom Plan error: $e",
+      );
+
+
+      if (!mounted) {
+        return;
+      }
+
+
+      setState(() {
+
+        isLoading = false;
+
+      });
+
+
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
+
+        const SnackBar(
+
+          content: Text(
+            "カスタムプランの生成に失敗しました。",
+          ),
+
+        ),
+
+      );
+    }
+  }
+
+
+  // =========================================================
+  // 通常メッセージ送信
+  // =========================================================
+
+  Future<void> onSend() async {
+
+    // 空文字
+    if (controller.text
+        .trim()
+        .isEmpty) {
+
+      return;
+    }
+
+
+    final text =
+        controller.text.trim();
+
+
+    // 入力欄クリア
     controller.clear();
 
+
     // =======================================================
-    // 新しい会話を作成
+    // 会話作成
     // =======================================================
 
     if (conversationId == null) {
+
       conversationId =
-          await firestoreService.createConversation(
-        title: text,
+          await firestoreService
+              .createConversation(
+
+        title:
+            text,
+
       );
     }
+
 
     // =======================================================
     // ユーザー質問を表示
     // =======================================================
 
     setState(() {
+
       messages.add(
+
         ChatMessage(
-          text: text,
-          isUser: true,
+
+          text:
+              text,
+
+          isUser:
+              true,
+
         ),
+
       );
+
 
       // ユーザー質問には商品なし
       messageProducts.add([]);
+
+
+      // ユーザー質問にはCustom Planなし
+      messageCustomPlans.add(null);
+
     });
 
+
     // =======================================================
-    // 初回質問の場合
-    //
-    // AnimatedSwitcher が
-    //
-    // こんにちは！
-    // 説明文
-    // おすすめ
-    // 質問カード
-    // 初期AIメッセージ
-    //
-    // を消している時間
+    // 初回アニメーション
     // =======================================================
 
     if (messages.length == 1) {
+
       await Future.delayed(
-        const Duration(milliseconds: 450),
+
+        const Duration(
+          milliseconds: 450,
+        ),
+
       );
     }
 
-    if (!mounted) return;
+
+    if (!mounted) {
+      return;
+    }
+
 
     _scrollToBottom();
 
+
     // =======================================================
-    // Firestoreにユーザー質問を保存
+    // Firestore保存
     // =======================================================
 
-    await firestoreService.saveConversationMessage(
-      conversationId: conversationId!,
-      text: text,
-      isUser: true,
+    await firestoreService
+        .saveConversationMessage(
+
+      conversationId:
+          conversationId!,
+
+      text:
+          text,
+
+      isUser:
+          true,
+
     );
+
+
+    if (!mounted) {
+      return;
+    }
+
 
     // =======================================================
     // AI入力中
     // =======================================================
 
-    if (!mounted) return;
-
     setState(() {
+
       isLoading = true;
+
     });
+
 
     _scrollToBottom();
 
+
     // =======================================================
-    // AIに質問
+    // 通常AI
     // =======================================================
 
     final reply =
-        await OpenAIService.sendMessage(
+        await OpenAIService
+            .sendMessage(
+
       text,
-      conversationId: conversationId,
+
+      conversationId:
+          conversationId,
+
     );
 
-    if (!mounted) return;
+
+    if (!mounted) {
+      return;
+    }
+
 
     // =======================================================
-    // AI回答を表示
+    // AI回答表示
     // =======================================================
 
     setState(() {
+
       isLoading = false;
 
+
       messages.add(
+
         ChatMessage(
-          text: reply.answer,
-          isUser: false,
+
+          text:
+              reply.answer,
+
+          isUser:
+              false,
+
         ),
+
       );
 
-      // =====================================================
-      // このAI回答専用の商品を保存
-      // =====================================================
 
       messageProducts.add(
-        List<ProductRecommendation>.from(
+
+        List<ProductRecommendation>
+            .from(
           reply.products,
         ),
+
       );
+
+
+      // 通常チャットではCustom Planなし
+      messageCustomPlans.add(null);
+
     });
+
 
     _scrollToBottom();
 
+
     // =======================================================
-    // AI回答＋商品をFirestoreに保存
+    // Firestore保存
     // =======================================================
 
-    await firestoreService.saveConversationMessage(
-      conversationId: conversationId!,
-      text: reply.answer,
-      isUser: false,
-      products: reply.products.map(
+    await firestoreService
+        .saveConversationMessage(
+
+      conversationId:
+          conversationId!,
+
+      text:
+          reply.answer,
+
+      isUser:
+          false,
+
+      products:
+          reply.products.map(
+
         (product) {
+
           return {
-            "name": product.name,
-            "category": product.category,
-            "reason": product.reason,
+
+            "name":
+                product.name,
+
+            "category":
+                product.category,
+
+            "reason":
+                product.reason,
+
             "searchQuery":
                 product.searchQuery,
+
           };
+
         },
+
       ).toList(),
+
     );
   }
+
 
   // =========================================================
   // Amazon検索
@@ -274,324 +665,345 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> searchAmazon(
     String searchQuery,
   ) async {
-    if (searchQuery.trim().isEmpty) {
+
+    if (searchQuery
+        .trim()
+        .isEmpty) {
+
       return;
     }
+
 
     final encodedQuery =
         Uri.encodeQueryComponent(
       searchQuery.trim(),
     );
 
-    final uri = Uri.parse(
+
+    final uri =
+        Uri.parse(
       "https://www.amazon.co.jp/s?k=$encodedQuery",
     );
 
+
     try {
-      final launched = await launchUrl(
+
+      final launched =
+          await launchUrl(
+
         uri,
-        webOnlyWindowName: '_blank',
+
+        webOnlyWindowName:
+            '_blank',
+
       );
 
-      if (!launched && mounted) {
+
+      if (
+        !launched &&
+        mounted
+      ) {
+
         ScaffoldMessenger.of(context)
             .showSnackBar(
+
           const SnackBar(
+
             content: Text(
               "Amazonを開けませんでした",
             ),
+
           ),
+
         );
       }
+
     } catch (e) {
-      if (!mounted) return;
+
+      if (!mounted) {
+        return;
+      }
+
 
       ScaffoldMessenger.of(context)
           .showSnackBar(
+
         const SnackBar(
+
           content: Text(
             "Amazonを開けませんでした",
           ),
+
         ),
+
       );
     }
   }
 
-  // =========================================================
-  // 商品カード
-  // =========================================================
 
-  Widget buildProductCard(
-    ProductRecommendation product,
-  ) {
-    return Container(
-      width: double.infinity,
 
-      margin: const EdgeInsets.only(
-        bottom: 12,
-      ),
 
-      padding: const EdgeInsets.all(16),
 
-      decoration: BoxDecoration(
-        color: Colors.white10,
-
-        borderRadius:
-            BorderRadius.circular(16),
-
-        border: Border.all(
-          color: Colors.white12,
-        ),
-      ),
-
-      child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
-
-        children: [
-          // ===================================================
-          // 商品名
-          // ===================================================
-
-          Text(
-            product.name,
-
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 15,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-
-          // ===================================================
-          // カテゴリ
-          // ===================================================
-
-          if (product.category.isNotEmpty) ...[
-            const SizedBox(height: 5),
-
-            Text(
-              product.category,
-
-              style: const TextStyle(
-                color: Colors.white54,
-                fontSize: 12,
-              ),
-            ),
-          ],
-
-          // ===================================================
-          // おすすめ理由
-          // ===================================================
-
-          if (product.reason.isNotEmpty) ...[
-            const SizedBox(height: 10),
-
-            Text(
-              product.reason,
-
-              style: const TextStyle(
-                color: Colors.white70,
-                fontSize: 13,
-                height: 1.5,
-              ),
-            ),
-          ],
-
-          const SizedBox(height: 14),
-
-          // ===================================================
-          // Amazonボタン
-          // ===================================================
-
-          SizedBox(
-            width: double.infinity,
-
-            child: OutlinedButton(
-              onPressed: () {
-                searchAmazon(
-                  product.searchQuery,
-                );
-              },
-
-              style:
-                  OutlinedButton.styleFrom(
-                foregroundColor:
-                    Colors.white,
-
-                side: const BorderSide(
-                  color: Colors.white24,
-                ),
-
-                padding:
-                    const EdgeInsets.symmetric(
-                  vertical: 13,
-                ),
-
-                shape:
-                    RoundedRectangleBorder(
-                  borderRadius:
-                      BorderRadius.circular(
-                    10,
-                  ),
-                ),
-              ),
-
-              child: const Text(
-                "Amazonで検索",
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   // =========================================================
-  // 一番下へ移動
+  // Scroll
   // =========================================================
 
   void _scrollToBottom() {
+
     WidgetsBinding.instance
         .addPostFrameCallback((_) {
+
       if (!scrollController.hasClients) {
         return;
       }
 
+
       scrollController.animateTo(
-        scrollController.position.maxScrollExtent,
+
+        scrollController.position
+            .maxScrollExtent,
+
         duration:
-            const Duration(milliseconds: 350),
-        curve: Curves.easeOut,
+            const Duration(
+          milliseconds: 350,
+        ),
+
+        curve:
+            Curves.easeOut,
+
       );
     });
   }
 
+
+  // =========================================================
+  // Dispose
+  // =========================================================
+
   @override
   void dispose() {
+
     controller.dispose();
+
     scrollController.dispose();
 
     super.dispose();
   }
 
+
   // =========================================================
-  // 画面
+  // Build
   // =========================================================
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(
+    BuildContext context,
+  ) {
+
+    final bool showWelcome =
+        messages.isEmpty &&
+        !widget.startCustomPlan;
+
+
     return Scaffold(
-      backgroundColor: Colors.black,
+
+      backgroundColor:
+          Colors.black,
+
 
       // =======================================================
       // Drawer
       // =======================================================
 
-      drawer: Drawer(
-        backgroundColor: Colors.black,
+      drawer:
+          Drawer(
 
-        child: SafeArea(
-          child: Padding(
+        backgroundColor:
+            Colors.black,
+
+        child:
+            SafeArea(
+
+          child:
+              Padding(
+
             padding:
-                const EdgeInsets.all(24),
+                const EdgeInsets.symmetric(
+              horizontal: 20,
+            ),
 
-            child: Column(
+            child:
+                Column(
+
               crossAxisAlignment:
                   CrossAxisAlignment.start,
 
               children: [
-                const SizedBox(height: 20),
 
-                const Text(
-                  "BIKER",
+                const SizedBox(
+                  height: 20,
+                ),
 
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 28,
-                    fontWeight:
-                        FontWeight.bold,
+
+                const Padding(
+
+                  padding:
+                      EdgeInsets.symmetric(
+                    horizontal: 12,
+                  ),
+
+                  child:
+                      Text(
+
+                    "BIKER",
+
+                    style:
+                        TextStyle(
+
+                      color:
+                          Colors.white,
+
+                      fontSize:
+                          26,
+
+                      fontWeight:
+                          FontWeight.bold,
+
+                    ),
                   ),
                 ),
 
-                const SizedBox(height: 50),
 
-                // =================================================
-                // 履歴
-                // =================================================
+                const SizedBox(
+                  height: 40,
+                ),
+
 
                 ListTile(
-                  leading: const Icon(
+
+                  contentPadding:
+                      const EdgeInsets
+                          .symmetric(
+                    horizontal: 12,
+                  ),
+
+                  leading:
+                      const Icon(
                     Icons.history,
                     color: Colors.white,
                   ),
 
-                  title: const Text(
+                  title:
+                      const Text(
+
                     "履歴",
 
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 17,
+                    style:
+                        TextStyle(
+
+                      color:
+                          Colors.white,
+
+                      fontSize:
+                          16,
+
                     ),
                   ),
 
                   onTap: () {
+
                     Navigator.push(
+
                       context,
+
                       MaterialPageRoute(
+
                         builder: (_) =>
                             const HistoryScreen(),
+
                       ),
                     );
                   },
                 ),
 
-                // =================================================
-                // 設定
-                // =================================================
 
                 ListTile(
-                  leading: const Icon(
+
+                  contentPadding:
+                      const EdgeInsets
+                          .symmetric(
+                    horizontal: 12,
+                  ),
+
+                  leading:
+                      const Icon(
                     Icons.settings,
                     color: Colors.white,
                   ),
 
-                  title: const Text(
+                  title:
+                      const Text(
+
                     "設定",
 
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 17,
+                    style:
+                        TextStyle(
+
+                      color:
+                          Colors.white,
+
+                      fontSize:
+                          16,
+
                     ),
                   ),
 
                   onTap: () {
+
                     Navigator.push(
+
                       context,
+
                       MaterialPageRoute(
+
                         builder: (_) =>
                             const SettingsScreen(),
+
                       ),
                     );
                   },
                 ),
 
-                // =================================================
-                // BIKERについて
-                // =================================================
 
                 ListTile(
-                  leading: const Icon(
+
+                  contentPadding:
+                      const EdgeInsets
+                          .symmetric(
+                    horizontal: 12,
+                  ),
+
+                  leading:
+                      const Icon(
                     Icons.info_outline,
                     color: Colors.white,
                   ),
 
-                  title: const Text(
+                  title:
+                      const Text(
+
                     "BIKERについて",
 
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 17,
+                    style:
+                        TextStyle(
+
+                      color:
+                          Colors.white,
+
+                      fontSize:
+                          16,
+
                     ),
                   ),
 
@@ -603,521 +1015,197 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
 
+
       // =======================================================
       // Body
       // =======================================================
 
-      body: SafeArea(
-        child: Column(
+      body:
+          SafeArea(
+
+        child:
+            Column(
+
           children: [
+
             Expanded(
-              child: Stack(
+
+              child:
+                  Stack(
+
                 children: [
+
                   Padding(
+
                     padding:
                         const EdgeInsets.symmetric(
-                      horizontal: 22,
+                      horizontal: 16,
                     ),
 
-                    child: ListView(
+                    child:
+                        ListView(
+
                       controller:
                           scrollController,
 
+                      keyboardDismissBehavior:
+                          ScrollViewKeyboardDismissBehavior
+                              .onDrag,
+
                       children: [
-                        const SizedBox(
-                          height: 12,
-                        ),
-
-                        // =================================================
-                        // ヘッダー
-                        // =================================================
-
-                        Row(
-  children: [
-    // ===============================
-    // 左：メニューボタン
-    // ===============================
-
-    Builder(
-      builder: (context) {
-        return GestureDetector(
-          onTap: () {
-            Scaffold.of(context).openDrawer();
-          },
-          child: const Icon(
-            Icons.menu,
-            color: Colors.white,
-            size: 28,
-          ),
-        );
-      },
-    ),
-
-    // ===============================
-    // 中央：BIKER AI
-    // ===============================
-
-    const Expanded(
-      child: Center(
-        child: Text(
-          "BIKER AI",
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
-    ),
-
-    // ===============================
-    // 右：プロフィール
-    // ===============================
-
-    GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => const GarageScreen(),
-          ),
-        );
-      },
-      child: const CircleAvatar(
-        radius: 18,
-        backgroundColor: Colors.white12,
-        child: Icon(
-          Icons.person,
-          color: Colors.white,
-          size: 20,
-        ),
-      ),
-    ),
-  ],
-),
 
                         const SizedBox(
-                          height: 5,
+                          height: 8,
                         ),
 
-                        
+
+                        const HomeHeader(),
+
 
                         const SizedBox(
-                          height: 25,
+                          height: 80,
                         ),
 
-                        // =================================================
-                        // 初期ホーム画面
-                        //
-                        // ここが今回の重要ポイント
-                        //
-                        // messages.isEmpty
-                        //
-                        // ↓
-                        //
-                        // 初期画面を表示
-                        //
-                        // ↓
-                        //
-                        // 質問送信
-                        //
-                        // ↓
-                        //
-                        // messages.isEmpty == false
-                        //
-                        // ↓
-                        //
-                        // AnimatedSwitcherが
-                        // 初期画面をアニメーションで消す
-                        // =================================================
 
                         AnimatedSwitcher(
-                          duration:
-                              const Duration(
-                            milliseconds: 450,
-                          ),
+  duration: const Duration(
+    milliseconds: 450,
+  ),
 
-                          reverseDuration:
-                              const Duration(
-                            milliseconds: 350,
-                          ),
+  reverseDuration: const Duration(
+    milliseconds: 350,
+  ),
 
-                          transitionBuilder:
-                              (
-                            child,
-                            animation,
-                          ) {
-                            return FadeTransition(
-                              opacity:
-                                  animation,
+  transitionBuilder: (
+    child,
+    animation,
+  ) {
+    return FadeTransition(
+      opacity: animation,
+      child: SizeTransition(
+        sizeFactor: animation,
+        axisAlignment: -1.0,
+        child: child,
+      ),
+    );
+  },
 
-                              child:
-                                  SizeTransition(
-                                sizeFactor:
-                                    animation,
+  child: showWelcome
+      ? WelcomeSection(
+          key: const ValueKey(
+            "welcome",
+          ),
+          questions: questions,
+          onQuestionTap: (question) async {
+            controller.text = question;
+            await onSend();
+          },
+        )
+      : const SizedBox(
+          key: ValueKey(
+            "conversationStarted",
+          ),
+        ),
+),
 
-                                axisAlignment:
-                                    -1.0,
 
-                                child: child,
-                              ),
-                            );
-                          },
+                        // =======================================
+// Messages
+// =======================================
 
-                          child: messages.isEmpty
-                              ? Column(
-                                  key: const ValueKey(
-                                    "welcome",
-                                  ),
+...List.generate(
+  messages.length,
+  (index) {
+    final message = messages[index];
 
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment
-                                          .start,
+    final products =
+        index < messageProducts.length
+            ? messageProducts[index]
+            : <ProductRecommendation>[];
 
-                                  children: [
-                                    // =================================================
-                                    // こんにちは
-                                    // =================================================
+    final customPlan =
+        index < messageCustomPlans.length
+            ? messageCustomPlans[index]
+            : null;
 
-                                    const Text(
-                                      "こんにちは！",
+    return ChatMessageItem(
+      message: message,
+      products: products,
+      customPlan: customPlan,
+      onAmazonSearch: searchAmazon,
+    );
+  },
+),
 
-                                      style:
-                                          TextStyle(
-                                        color:
-                                            Colors
-                                                .white,
 
-                                        fontSize:
-                                            30,
-
-                                        fontWeight:
-                                            FontWeight
-                                                .bold,
-                                      ),
-                                    ),
-
-                                    const SizedBox(
-                                      height: 10,
-                                    ),
-
-                                    // =================================================
-                                    // 説明文
-                                    // =================================================
-
-                                    const Text(
-                                      "初めてのカスタムでも安心。\n\n"
-                                      "BIKER AIがあなたに合った\n"
-                                      "カスタムを一緒に考えます。",
-
-                                      style:
-                                          TextStyle(
-                                        color:
-                                            Colors
-                                                .white70,
-
-                                        fontSize:
-                                            18,
-
-                                        height:
-                                            1.6,
-                                      ),
-                                    ),
-
-                                    const SizedBox(
-                                      height: 35,
-                                    ),
-
-                                    // =================================================
-                                    // おすすめ
-                                    // =================================================
-
-                                    const Text(
-                                      "おすすめ",
-
-                                      style:
-                                          TextStyle(
-                                        color:
-                                            Colors
-                                                .white,
-
-                                        fontSize:
-                                            18,
-
-                                        fontWeight:
-                                            FontWeight
-                                                .w600,
-                                      ),
-                                    ),
-
-                                    const SizedBox(
-                                      height: 20,
-                                    ),
-
-                                    // =================================================
-                                    // おすすめ質問カード
-                                    // =================================================
-
-                                    ...questions.map(
-                            (q) =>
-                                          QuestionCard(
-                                        text: q,
-
-                                        onTap:
-                                            () async {
-                                          controller
-                                              .text = q;
-
-                                          await onSend();
-                                        },
-                                      ),
-                                    ),
-
-                                    const SizedBox(
-                                      height: 30,
-                                    ),
-
-                                    // =================================================
-                                    // AI初期メッセージ
-                                    // =================================================
-
-                                    Container(
-                                      padding:
-                                          const EdgeInsets
-                                              .all(
-                                        18,
-                                      ),
-
-                                      decoration:
-                                          BoxDecoration(
-                                        color:
-                                            Colors
-                                                .white10,
-
-                                        borderRadius:
-                                            BorderRadius
-                                                .circular(
-                                          18,
-                                        ),
-                                      ),
-
-                                      child:
-                                          const Text(
-                                        "🤖 こんにちは！BIKER AIです。\n"
-                                        "何でも聞いてください！",
-
-                                        style:
-                                            TextStyle(
-                                          color:
-                                              Colors
-                                                  .white,
-
-                                          fontSize:
-                                              16,
-                                        ),
-                                      ),
-                                    ),
-
-                                    const SizedBox(
-                                      height: 20,
-                                    ),
-                                  ],
-                                )
-                              : const SizedBox(
-                                  key: ValueKey(
-                                    "conversationStarted",
-                                  ),
-                                ),
-                        ),
-
-                        // =================================================
-                        // チャット履歴
-                        // =================================================
-
-                        ...List.generate(
-                          messages.length,
-                          (index) {
-                            final message =
-                                messages[index];
-
-                            // =================================================
-                            // このメッセージ専用の商品
-                            // =================================================
-
-                            final products =
-                                index <
-                                        messageProducts
-                                            .length
-                                    ? messageProducts[
-                                        index]
-                                    : <ProductRecommendation>[];
-
-                            return Container(
-                              margin:
-                                  const EdgeInsets
-                                      .only(
-                                bottom: 12,
-                              ),
-
-                              alignment:
-                                  message.isUser
-                                      ? Alignment
-                                          .centerRight
-                                      : Alignment
-                                          .centerLeft,
-
-                              child:
-                                  Container(
-                                padding:
-                                    const EdgeInsets
-                                        .all(
-                                  16,
-                                ),
-
-                                constraints: BoxConstraints(
-                                maxWidth: message.isUser
-                                 ? MediaQuery.of(context).size.width * 0.60
-                                 : MediaQuery.of(context).size.width * 0.70,
-                              ),
-
-                                decoration:
-                                    BoxDecoration(
-                                  color: message
-                                          .isUser
-                                      ? Colors.white
-                                      : Colors
-                                          .white10,
-
-                                  borderRadius:
-                                      BorderRadius
-                                          .circular(
-                                            18,
-                                  ),
-                                ),
-
-                                child: Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment
-                                          .start,
-
-                                  children: [
-                                    // =================================================
-                                    // メッセージ本文
-                                    // ===========
-
-                                    Text(
-                                      message.text,
-
-                                      style:
-                                          TextStyle(
-                                        color: message
-                                                .isUser
-                                            ? Colors
-                                                .black
-                                            : Colors
-                                                .white,
-
-                                        fontSize: 15,
-
-                                        height: 1.5,
-                                      ),
-                                    ),
-
-                                    // =================================================
-                                    // AI回答専用の商品
-                                    // =================================================
-
-                                    if (!message.isUser &&
-                                        products
-                                            .isNotEmpty) ...[
-                                      const SizedBox(
-                                        height: 18,
-                                      ),
-
-                                      const Text(
-                                        "おすすめ商品",
-
-                                        style:
-                                            TextStyle(
-                                          color:
-                                              Colors
-                                                  .white,
-
-                                          fontSize:
-                                              16,
-
-                                          fontWeight:
-                                              FontWeight
-                                                  .bold,
-                                        ),
-                                      ),
-
-                                      const SizedBox(
-                                        height: 12,
-                                      ),
-
-                                      ...products.map(
-                                        (product) =>
-                                            buildProductCard(
-                                          product,
-                                        ),
-                                      ),
-                                    ],
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-
-                        // =================================================
+                        // =======================================
                         // AI入力中
-                        // =================================================
+                        // =======================================
 
                         if (isLoading)
+
                           const AiTypingIndicator(),
 
+
                         const SizedBox(
-                          height: 30,
+                          height: 24,
                         ),
                       ],
                     ),
                   ),
 
-                  // =========================================================
-                  // 下まで移動ボタン
-                  // =========================================================
+
+                  // =============================================
+                  // 下まで移動
+                  // =============================================
 
                   if (showScrollToBottom)
-                    Positioned(
-                      right: 20,
-                      bottom: 20,
 
-                      child: GestureDetector(
+                    Positioned(
+
+                      right:
+                          12,
+
+                      bottom:
+                          16,
+
+                      child:
+                          GestureDetector(
+
                         onTap:
                             _scrollToBottom,
 
-                        child: Container(
-                          width: 44,
-                          height: 44,
+                        child:
+                            Container(
+
+                          width:
+                              40,
+
+                          height:
+                              40,
 
                           decoration:
                               const BoxDecoration(
+
                             color:
                                 Colors.white12,
 
                             shape:
                                 BoxShape.circle,
+
                           ),
 
-                          child: const Icon(
-                            Icons
-                                .keyboard_arrow_down,
+                          child:
+                              const Icon(
+
+                            Icons.keyboard_arrow_down,
 
                             color:
                                 Colors.white,
 
-                            size: 28,
+                            size:
+                                24,
+
                           ),
                         ),
                       ),
@@ -1126,13 +1214,19 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
 
-            // =======================================================
-            // チャット入力欄
-            // =======================================================
+
+            // ===================================================
+            // Chat Input
+            // ===================================================
 
             ChatInput(
-              controller: controller,
-              onSend: onSend,
+
+              controller:
+                  controller,
+
+              onSend:
+                  onSend,
+
             ),
           ],
         ),

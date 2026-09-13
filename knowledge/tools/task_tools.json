@@ -1,0 +1,930 @@
+{
+  "knowledge_type": "task_tools",
+  "version": "1.0",
+  "description": "バイクの作業内容から必要な工具、追加確認事項、安全確認、車両固有Knowledgeの必要性を判断するためのKnowledge",
+
+  "global_rules": {
+    "tool_selection": [
+      "ユーザーの質問から作業内容を特定してから工具を選択する",
+      "工具は作業内容、車両、部品、作業方法によって変わる可能性がある",
+      "車種・年式・型式・仕様によって必要な工具やサイズが異なる場合がある",
+      "Knowledgeに具体的な工具サイズが記載されていない場合、サイズを推測しない",
+      "ボルトやナットには必ず適合する工具サイズを使用する",
+      "適合しない工具を無理に使用しない",
+      "重要保安部品に関係する作業では、適切な工具と車両固有情報を優先する",
+      "指定締付けトルクが存在する場合はトルクレンチの使用を優先する"
+    ],
+
+    "vehicle_rules": [
+      "車種だけでなく年式、型式、仕様が必要になる場合がある",
+      "同じ車種名でも世代や型式によって構造が異なる可能性がある",
+      "車両固有情報が不足している場合は断定しない",
+      "ユーザーのGarage情報と車両Knowledgeが一致しない場合は追加確認を行う"
+    ],
+
+    "safety_rules": [
+      "ブレーキ、ステアリング、ホイール、サスペンション、フレームなど重要部品に関係する作業は安全確認を優先する",
+      "車体を持ち上げる作業では車体の安定性を確認する",
+      "電装作業ではショートや誤接続を防止する",
+      "エンジン周辺作業では高温部品や回転部品に注意する",
+      "作業後は取り付け状態と機能を確認する"
+    ],
+
+    "uncertainty_rules": [
+      "Knowledgeにない情報を既知の事実として扱わない",
+      "不明な工具サイズを推測しない",
+      "不明な締付けトルクを推測しない",
+      "不明な車両仕様を推測しない",
+      "必要な情報が不足している場合はユーザーに確認する"
+    ]
+  },
+
+  "tool_categories": {
+    "fastening": [
+      "socket_wrench",
+      "combination_wrench",
+      "hex_wrench",
+      "screwdriver"
+    ],
+
+    "torque_control": [
+      "torque_wrench"
+    ],
+
+    "gripping": [
+      "pliers",
+      "needle_nose_pliers"
+    ],
+
+    "cutting": [
+      "wire_cutter"
+    ],
+
+    "electrical": [
+      "multimeter"
+    ],
+
+    "support": [
+      "maintenance_stand"
+    ],
+
+    "impact": [
+      "rubber_mallet"
+    ]
+  },
+
+  "tasks": [
+
+    {
+      "id": "handlebar_replacement",
+      "name": "ハンドル交換",
+      "keywords": [
+        "ハンドル交換",
+        "ハンドルを変えたい",
+        "アップハンドル",
+        "ドラッグバー",
+        "ハンドル取り付け"
+      ],
+
+      "required_tools": [
+        "socket_wrench",
+        "combination_wrench",
+        "hex_wrench"
+      ],
+
+      "recommended_tools": [
+        "torque_wrench"
+      ],
+
+      "conditional_tools": [
+        "screwdriver",
+        "pliers"
+      ],
+
+      "required_vehicle_knowledge": true,
+      "required_safety_knowledge": true,
+      "required_regulation_check": true,
+      "required_inspection_check": true,
+
+      "checks": [
+        "ハンドルの固定方法",
+        "ハンドル径",
+        "スイッチ類の取り付け方法",
+        "ブレーキホースの長さ",
+        "クラッチケーブルの長さ",
+        "アクセルケーブルの長さ",
+        "配線の長さ",
+        "ケーブル・ホースの取り回し",
+        "ハンドルを左右に切った際の干渉",
+        "ハンドルロックへの影響",
+        "指定締付けトルク"
+      ],
+
+      "safety": [
+        "ブレーキホースやケーブルに無理な張りが発生していないことを確認する",
+        "ハンドルを左右いっぱいに切って各部の干渉を確認する",
+        "スロットルが正常に戻ることを確認する",
+        "ブレーキ操作に異常がないことを確認する",
+        "配線が引っ張られないことを確認する"
+      ]
+    },
+
+    {
+      "id": "seat_replacement",
+      "name": "シート交換",
+      "keywords": [
+        "シート交換",
+        "シートを変えたい",
+        "ソロシート",
+        "シート取り付け"
+      ],
+
+      "required_tools": [
+        "socket_wrench",
+        "combination_wrench"
+      ],
+
+      "recommended_tools": [
+        "torque_wrench"
+      ],
+
+      "conditional_tools": [
+        "screwdriver",
+        "pliers"
+      ],
+
+      "required_vehicle_knowledge": true,
+      "required_safety_knowledge": true,
+      "required_regulation_check": true,
+      "required_inspection_check": false,
+
+      "checks": [
+        "シート固定方法",
+        "固定ボルト・ナット",
+        "シートステー",
+        "取り付け位置",
+        "フレームとの干渉",
+        "配線や電装部品との干渉"
+      ],
+
+      "safety": [
+        "シートが確実に固定されていることを確認する",
+        "走行中にシートが動かないことを確認する",
+        "フレームや配線を挟み込まないようにする"
+      ]
+    },
+
+    {
+      "id": "headlight_replacement",
+      "name": "ヘッドライト交換",
+      "keywords": [
+        "ヘッドライト交換",
+        "ライト交換",
+        "ヘッドライトを変えたい",
+        "ライト取り付け"
+      ],
+
+      "required_tools": [
+        "socket_wrench",
+        "combination_wrench",
+        "screwdriver"
+      ],
+
+      "recommended_tools": [
+        "multimeter"
+      ],
+
+      "conditional_tools": [
+        "pliers",
+        "hex_wrench"
+      ],
+
+      "required_vehicle_knowledge": true,
+      "required_safety_knowledge": true,
+      "required_regulation_check": true,
+      "required_inspection_check": true,
+
+      "checks": [
+        "ライト固定方法",
+        "電源電圧",
+        "配線方式",
+        "アース",
+        "コネクター形状",
+        "ヒューズ",
+        "ライトの光軸",
+        "取り付け位置",
+        "保安基準への適合"
+      ],
+
+      "safety": [
+        "電装作業ではショートを防止する",
+        "配線を無理に引っ張らない",
+        "取り付け後にライトが正常に点灯することを確認する",
+        "光軸を確認する"
+      ]
+    },
+
+    {
+      "id": "turn_signal_replacement",
+      "name": "ウインカー交換",
+      "keywords": [
+        "ウインカー交換",
+        "ウインカーを変えたい",
+        "ウインカー取り付け",
+        "ウインカー移設"
+      ],
+
+      "required_tools": [
+        "socket_wrench",
+        "combination_wrench",
+        "screwdriver"
+      ],
+
+      "recommended_tools": [
+        "multimeter"
+      ],
+
+      "conditional_tools": [
+        "pliers",
+        "hex_wrench"
+      ],
+
+      "required_vehicle_knowledge": true,
+      "required_safety_knowledge": true,
+      "required_regulation_check": true,
+      "required_inspection_check": true,
+
+      "checks": [
+        "固定方法",
+        "配線",
+        "電圧",
+        "アース",
+        "点滅方式",
+        "取り付け位置",
+        "左右の視認性",
+        "保安基準"
+      ],
+
+      "safety": [
+        "配線接続を確認する",
+        "ショートを防止する",
+        "左右のウインカーが正常に作動することを確認する"
+      ]
+    },
+
+    {
+      "id": "mirror_replacement",
+      "name": "ミラー交換",
+      "keywords": [
+        "ミラー交換",
+        "ミラーを変えたい",
+        "バックミラー交換"
+      ],
+
+      "required_tools": [
+        "combination_wrench"
+      ],
+
+      "recommended_tools": [
+        "torque_wrench"
+      ],
+
+      "conditional_tools": [
+        "socket_wrench",
+        "hex_wrench"
+      ],
+
+      "required_vehicle_knowledge": true,
+      "required_safety_knowledge": true,
+      "required_regulation_check": true,
+      "required_inspection_check": true,
+
+      "checks": [
+        "ミラー取り付け部の規格",
+        "左右の取り付け",
+        "締付け状態",
+        "後方視認性",
+        "保安基準"
+      ],
+
+      "safety": [
+        "走行中にミラーが動かないよう確実に固定する",
+        "後方が十分確認できることを確認する"
+      ]
+    },
+
+    {
+      "id": "exhaust_replacement",
+      "name": "マフラー交換",
+      "keywords": [
+        "マフラー交換",
+        "マフラーを変えたい",
+        "社外マフラー",
+        "マフラー取り付け"
+      ],
+
+      "required_tools": [
+        "socket_wrench",
+        "combination_wrench"
+      ],
+
+      "recommended_tools": [
+        "torque_wrench"
+      ],
+
+      "conditional_tools": [
+        "rubber_mallet",
+        "pliers"
+      ],
+
+      "required_vehicle_knowledge": true,
+      "required_safety_knowledge": true,
+      "required_regulation_check": true,
+      "required_inspection_check": true,
+
+      "checks": [
+        "車種・年式・型式",
+        "マフラー適合",
+        "固定方法",
+        "排気系接続部",
+        "ガスケット",
+        "排気漏れ",
+        "騒音",
+        "排出ガス",
+        "保安基準",
+        "車検への影響"
+      ],
+
+      "safety": [
+        "エンジンとマフラーが十分に冷えていることを確認する",
+        "排気漏れがないことを確認する",
+        "マフラーが確実に固定されていることを確認する"
+      ]
+    },
+
+    {
+      "id": "brake_work",
+      "name": "ブレーキ周辺作業",
+      "keywords": [
+        "ブレーキ交換",
+        "ブレーキ整備",
+        "ブレーキパッド交換",
+        "ブレーキキャリパー",
+        "ブレーキ周り"
+      ],
+
+      "required_tools": [
+        "socket_wrench",
+        "combination_wrench"
+      ],
+
+      "recommended_tools": [
+        "torque_wrench"
+      ],
+
+      "conditional_tools": [
+        "hex_wrench",
+        "screwdriver",
+        "pliers"
+      ],
+
+      "required_vehicle_knowledge": true,
+      "required_safety_knowledge": true,
+      "required_regulation_check": true,
+      "required_inspection_check": true,
+
+      "importance": "critical",
+
+      "checks": [
+        "車種・年式・型式",
+        "ブレーキ方式",
+        "部品適合",
+        "指定締付けトルク",
+        "ブレーキフルード",
+        "ホース・配管",
+        "取り付け状態",
+        "作業後の制動状態"
+      ],
+
+      "safety": [
+        "ブレーキ関連部品は確実に取り付ける",
+        "作業後にブレーキが正常に作動することを確認する",
+        "車両固有の整備情報が確認できない場合は具体的な作業方法を断定しない"
+      ],
+
+      "restriction": "重要保安部品に関係するため、車両固有Knowledgeが不足している場合は詳細な作業手順を断定しない"
+    },
+
+    {
+      "id": "wheel_work",
+      "name": "ホイール周辺作業",
+      "keywords": [
+        "ホイール交換",
+        "ホイールを外したい",
+        "前輪を外したい",
+        "後輪を外したい",
+        "タイヤ交換"
+      ],
+
+      "required_tools": [
+        "socket_wrench",
+        "combination_wrench",
+        "maintenance_stand"
+      ],
+
+      "recommended_tools": [
+        "torque_wrench"
+      ],
+
+      "conditional_tools": [
+        "rubber_mallet"
+      ],
+
+      "required_vehicle_knowledge": true,
+      "required_safety_knowledge": true,
+      "required_regulation_check": true,
+      "required_inspection_check": true,
+
+      "importance": "critical",
+
+      "checks": [
+        "車体の支持方法",
+        "アクスル周辺部品",
+        "ホイール固定方法",
+        "ブレーキ部品",
+        "指定締付けトルク",
+        "ホイール回転状態"
+      ],
+
+      "safety": [
+        "車体を確実に安定させる",
+        "作業中に車体が転倒しないことを確認する",
+        "ホイール取り付け後に正常に回転することを確認する",
+        "ブレーキが正常に作動することを確認する"
+      ]
+    },
+
+    {
+      "id": "battery_work",
+      "name": "バッテリー交換・点検",
+      "keywords": [
+        "バッテリー交換",
+        "バッテリーを変えたい",
+        "バッテリー電圧",
+        "バッテリー点検"
+      ],
+
+      "required_tools": [
+        "combination_wrench",
+        "socket_wrench"
+      ],
+
+      "recommended_tools": [
+        "multimeter"
+      ],
+
+      "conditional_tools": [
+        "screwdriver",
+        "pliers"
+      ],
+
+      "required_vehicle_knowledge": true,
+      "required_safety_knowledge": true,
+      "required_regulation_check": false,
+      "required_inspection_check": false,
+
+      "checks": [
+        "バッテリー種類",
+        "電圧",
+        "端子位置",
+        "端子接続",
+        "固定方法",
+        "車両側電装仕様"
+      ],
+
+      "safety": [
+        "端子の接続順序を車両固有情報で確認する",
+        "端子同士を工具などで短絡させない",
+        "取り付け後に電装系が正常に作動することを確認する"
+      ]
+    },
+
+    {
+      "id": "electrical_work",
+      "name": "電装作業",
+      "keywords": [
+        "電装",
+        "配線",
+        "配線加工",
+        "電圧測定",
+        "電気系",
+        "電装品取り付け"
+      ],
+
+      "required_tools": [
+        "multimeter",
+        "pliers"
+      ],
+
+      "recommended_tools": [
+        "screwdriver"
+      ],
+
+      "conditional_tools": [
+        "wire_cutter"
+      ],
+
+      "required_vehicle_knowledge": true,
+      "required_safety_knowledge": true,
+      "required_regulation_check": true,
+      "required_inspection_check": true,
+
+      "checks": [
+        "車両電圧",
+        "配線図",
+        "ヒューズ",
+        "アース",
+        "コネクター",
+        "電装品の消費電力",
+        "配線容量",
+        "保安基準"
+      ],
+
+      "safety": [
+        "配線作業ではショートを防止する",
+        "車両の電装仕様を確認してから作業する",
+        "電圧や配線が不明な状態で推測による接続を行わない"
+      ]
+    },
+
+    {
+      "id": "chain_adjustment",
+      "name": "チェーン調整",
+      "keywords": [
+        "チェーン調整",
+        "チェーン張り",
+        "チェーンのたるみ",
+        "チェーンメンテナンス"
+      ],
+
+      "required_tools": [
+        "combination_wrench",
+        "socket_wrench"
+      ],
+
+      "recommended_tools": [
+        "torque_wrench"
+      ],
+
+      "conditional_tools": [
+        "pliers"
+      ],
+
+      "required_vehicle_knowledge": true,
+      "required_safety_knowledge": true,
+      "required_regulation_check": false,
+      "required_inspection_check": false,
+
+      "checks": [
+        "チェーン種類",
+        "指定たるみ量",
+        "アクスル周辺",
+        "アジャスター",
+        "ホイールアライメント",
+        "指定締付けトルク"
+      ],
+
+      "safety": [
+        "エンジンを停止して作業する",
+        "車体を安定させる",
+        "調整後にチェーンの状態を確認する",
+        "ホイールアライメントを確認する"
+      ]
+    },
+
+    {
+      "id": "oil_change",
+      "name": "オイル交換",
+      "keywords": [
+        "オイル交換",
+        "エンジンオイル交換",
+        "オイルを変えたい"
+      ],
+
+      "required_tools": [
+        "socket_wrench",
+        "combination_wrench"
+      ],
+
+      "recommended_tools": [
+        "torque_wrench"
+      ],
+
+      "conditional_tools": [
+        "pliers"
+      ],
+
+      "required_vehicle_knowledge": true,
+      "required_safety_knowledge": true,
+      "required_regulation_check": false,
+      "required_inspection_check": false,
+
+      "checks": [
+        "推奨オイル種類",
+        "オイル量",
+        "ドレンボルト",
+        "ドレンワッシャー",
+        "オイルフィルター",
+        "指定締付けトルク"
+      ],
+
+      "safety": [
+        "エンジンオイルの温度に注意する",
+        "車体を安定させる",
+        "廃油を適切に処理する",
+        "交換後にオイル漏れがないことを確認する"
+      ]
+    },
+
+    {
+      "id": "fender_replacement",
+      "name": "フェンダー交換・加工",
+      "keywords": [
+        "フェンダー交換",
+        "フェンダーを変えたい",
+        "フェンダーレス",
+        "リアフェンダー",
+        "フロントフェンダー"
+      ],
+
+      "required_tools": [
+        "socket_wrench",
+        "combination_wrench"
+      ],
+
+      "recommended_tools": [
+        "torque_wrench"
+      ],
+
+      "conditional_tools": [
+        "screwdriver",
+        "wire_cutter",
+        "pliers",
+        "hex_wrench"
+      ],
+
+      "required_vehicle_knowledge": true,
+      "required_safety_knowledge": true,
+      "required_regulation_check": true,
+      "required_inspection_check": true,
+
+      "checks": [
+        "フェンダー固定方法",
+        "フレームへの取り付け",
+        "タイヤとのクリアランス",
+        "配線",
+        "テールランプ",
+        "ウインカー",
+        "ナンバープレート",
+        "泥よけ機能",
+        "保安基準"
+      ],
+
+      "safety": [
+        "タイヤとの干渉がないことを確認する",
+        "配線がタイヤや可動部に接触しないようにする",
+        "灯火類が正常に作動することを確認する"
+      ]
+    },
+
+    {
+      "id": "air_filter_work",
+      "name": "エアフィルター交換・吸気系作業",
+      "keywords": [
+        "エアフィルター交換",
+        "エアクリーナー交換",
+        "エアクリを変えたい",
+        "吸気系カスタム"
+      ],
+
+      "required_tools": [
+        "socket_wrench",
+        "screwdriver"
+      ],
+
+      "recommended_tools": [
+        "combination_wrench"
+      ],
+
+      "conditional_tools": [
+        "pliers"
+      ],
+
+      "required_vehicle_knowledge": true,
+      "required_safety_knowledge": true,
+      "required_regulation_check": true,
+      "required_inspection_check": true,
+
+      "checks": [
+        "車両の吸気方式",
+        "エアクリーナー形状",
+        "取り付け方法",
+        "キャブレターまたは燃料噴射方式",
+        "吸気系変更による影響",
+        "排出ガスへの影響"
+      ],
+
+      "safety": [
+        "異物が吸気系に入らないよう注意する",
+        "取り付け後に吸気漏れがないことを確認する"
+      ]
+    },
+
+    {
+      "id": "carburetor_work",
+      "name": "キャブレター作業",
+      "keywords": [
+        "キャブ調整",
+        "キャブレター調整",
+        "キャブ清掃",
+        "ジェット交換",
+        "キャブセッティング"
+      ],
+
+      "required_tools": [
+        "screwdriver",
+        "combination_wrench"
+      ],
+
+      "recommended_tools": [
+        "socket_wrench"
+      ],
+
+      "conditional_tools": [
+        "pliers"
+      ],
+
+      "required_vehicle_knowledge": true,
+      "required_safety_knowledge": true,
+      "required_regulation_check": true,
+      "required_inspection_check": true,
+
+      "checks": [
+        "キャブレター型式",
+        "車両仕様",
+        "ジェット仕様",
+        "吸気系",
+        "排気系",
+        "燃料供給系",
+        "エンジン状態"
+      ],
+
+      "safety": [
+        "燃料を扱うため火気を避ける",
+        "燃料漏れがないことを確認する",
+        "作業環境を換気する"
+      ]
+    },
+
+    {
+      "id": "suspension_work",
+      "name": "サスペンション周辺作業",
+      "keywords": [
+        "サスペンション交換",
+        "リアサス交換",
+        "フォーク交換",
+        "フロントフォーク",
+        "サスを変えたい"
+      ],
+
+      "required_tools": [
+        "socket_wrench",
+        "combination_wrench"
+      ],
+
+      "recommended_tools": [
+        "torque_wrench",
+        "maintenance_stand"
+      ],
+
+      "conditional_tools": [
+        "hex_wrench"
+      ],
+
+      "required_vehicle_knowledge": true,
+      "required_safety_knowledge": true,
+      "required_regulation_check": true,
+      "required_inspection_check": true,
+
+      "importance": "critical",
+
+      "checks": [
+        "車両型式",
+        "サスペンション仕様",
+        "取り付け方法",
+        "車体支持方法",
+        "指定締付けトルク",
+        "車高への影響",
+        "タイヤ・フレームとの干渉"
+      ],
+
+      "safety": [
+        "車体を確実に支持する",
+        "サスペンション部品を確実に固定する",
+        "作業後に可動部の干渉を確認する",
+        "走行前に取り付け状態を再確認する"
+      ],
+
+      "restriction": "重要部品に関係するため、車両固有Knowledgeが不足している場合は詳細な作業手順を断定しない"
+    },
+
+    {
+      "id": "handle_controls_work",
+      "name": "ハンドル周辺操作系作業",
+      "keywords": [
+        "スロットル交換",
+        "グリップ交換",
+        "スイッチ交換",
+        "クラッチレバー交換",
+        "ブレーキレバー交換"
+      ],
+
+      "required_tools": [
+        "screwdriver",
+        "combination_wrench"
+      ],
+
+      "recommended_tools": [
+        "hex_wrench"
+      ],
+
+      "conditional_tools": [
+        "pliers",
+        "torque_wrench"
+      ],
+
+      "required_vehicle_knowledge": true,
+      "required_safety_knowledge": true,
+      "required_regulation_check": true,
+      "required_inspection_check": true,
+
+      "checks": [
+        "車種・年式・型式",
+        "操作系部品の固定方法",
+        "ケーブル取り回し",
+        "スロットル作動",
+        "ブレーキ作動",
+        "クラッチ作動",
+        "配線"
+      ],
+
+      "safety": [
+        "スロットルが正常に戻ることを確認する",
+        "ブレーキレバーが正常に作動することを確認する",
+        "クラッチ操作に異常がないことを確認する",
+        "ケーブルに無理な張りがないことを確認する"
+      ]
+    }
+  ],
+
+  "selection_logic": {
+    "step_1": "ユーザーの質問から作業内容を特定する",
+
+    "step_2": "作業内容に一致するtaskを検索する",
+
+    "step_3": "required_toolsから必須工具を取得する",
+
+    "step_4": "recommended_toolsから推奨工具を取得する",
+
+    "step_5": "conditional_toolsは作業条件によって必要になる工具として扱う",
+
+    "step_6": "required_vehicle_knowledgeがtrueの場合、車両固有Knowledgeを取得する",
+
+    "step_7": "required_safety_knowledgeがtrueの場合、Safety Knowledgeを取得する",
+
+    "step_8": "required_regulation_checkがtrueの場合、Regulation Knowledgeを取得する",
+
+    "step_9": "required_inspection_checkがtrueの場合、Inspection Knowledgeを取得する",
+
+    "step_10": "Knowledge内に具体的な工具サイズが存在する場合のみサイズを提示する",
+
+    "step_11": "Knowledge内に具体的な工具サイズが存在しない場合はサイズを推測しない",
+
+    "step_12": "重要保安部品に関係する作業では安全性と車両固有情報を優先する"
+  },
+
+  "output_rules": {
+    "tool_order": [
+      "必須工具",
+      "推奨工具",
+      "条件付き工具"
+    ],
+
+    "do_not": [
+      "存在しない工具情報を作成しない",
+      "工具サイズを推測しない",
+      "締付けトルクを推測しない",
+      "車種固有仕様を推測しない"
+    ]
+  }
+}

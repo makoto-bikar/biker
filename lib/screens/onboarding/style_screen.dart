@@ -18,180 +18,502 @@ class StyleScreen extends StatefulWidget {
 }
 
 class _StyleScreenState extends State<StyleScreen> {
-  final List<String> styles = [
+  // =========================
+  // 全体シルエット
+  // =========================
+
+  final List<String> silhouettes = [
     "チョッパー",
     "ボバー",
-    "カフェレーサー",
-    "スクランブラー",
-    "トラッカー",
-    "クラシック",
-    "ネイキッド",
     "ストリート",
-    "オールドスクール",
-    "カスタム未定"
   ];
 
-  String? selectedStyle;
+  String? selectedSilhouette;
+
+  // =========================
+  // タンク
+  // =========================
+
+  final List<String> tanks = [
+    "スポーツスター",
+    "ピーナッツ",
+  ];
+
+  String? selectedTank;
+
+  // =========================
+  // ハンドル
+  // =========================
+
+  final List<String> handlebars = [
+    "エイプ",
+    "プルバック",
+  ];
+
+  String? selectedHandlebar;
+
+  // =========================
+  // フロントフォーク
+  // =========================
+
+  final List<String> frontForks = [
+    "ロング",
+    "ノーマル",
+  ];
+
+  String? selectedFrontFork;
+
+  // =========================
+  // 全項目が選択されているか
+  // =========================
+
+  bool get canGenerate {
+    return selectedSilhouette != null &&
+        selectedTank != null &&
+        selectedHandlebar != null &&
+        selectedFrontFork != null;
+  }
+
+  // =========================
+  // 仮ビジュアル
+  // 後から画像に差し替える
+  // =========================
+
+  Widget _buildVisual({
+    required String title,
+    required String imagePath,
+    required bool selected,
+    required VoidCallback onTap,
+    double height = 120,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        height: height,
+        decoration: BoxDecoration(
+          color: selected
+              ? Colors.white
+              : const Color(0xFF151515),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(
+            color: selected
+                ? Colors.white
+                : Colors.white12,
+            width: 1,
+          ),
+        ),
+        child: Stack(
+          children: [
+            Padding(
+  padding: const EdgeInsets.all(6),
+  child: ClipRRect(
+    borderRadius: BorderRadius.circular(14),
+    child: Image.asset(
+      imagePath,
+      width: double.infinity,
+      height: double.infinity,
+      fit: BoxFit.cover,
+    ),
+  ),
+),
+
+            if (selected)
+              const Positioned(
+                top: 12,
+                right: 12,
+                child: Icon(
+                  Icons.check_circle,
+                  color: Colors.black,
+                  size: 22,
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // =========================
+  // セクションタイトル
+  // =========================
+
+  Widget _buildSectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Text(
+        title,
+        style: const TextStyle(
+          color: Colors.white70,
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+          letterSpacing: 1.2,
+        ),
+      ),
+    );
+  }
+
+  // =========================
+  // 次へ
+  // =========================
+
+  void _goNext() {
+    if (!canGenerate) return;
+
+    // 現段階では既存のExperienceScreenへ
+    //
+    // 今後ここで、
+    // silhouette / tank / handlebar / fork
+    // を画像生成AIへ渡す。
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ExperienceScreen(
+          manufacturer: widget.manufacturer,
+          bike: widget.bike,
+          year: widget.year,
+          style: selectedSilhouette!,
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    final buttonWidth = MediaQuery.of(context).size.width * 0.85;
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    final horizontalPadding =
+        screenWidth > 700
+            ? screenWidth * 0.18
+            : 24.0;
 
     return Scaffold(
       backgroundColor: Colors.black,
 
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: EdgeInsets.symmetric(
+            horizontal: horizontalPadding,
+          ),
 
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-
             children: [
+              // =========================
+              // ヘッダー
+              // =========================
 
-              const SizedBox(height: 10),
+              Row(
+                children: [
+                  const Text(
+                    "BIKER",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 1.5,
+                    ),
+                  ),
 
-              const Text(
-                "⑤ / 6",
-                style: TextStyle(
-                  color: Colors.white54,
-                  fontSize: 16,
+                  const Spacer(),
+
+                  Text(
+                    "${widget.bike} / ${widget.year}",
+                    style: const TextStyle(
+                      color: Colors.white38,
+                      fontSize: 13,
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 38),
+
+              // =========================
+              // タイトル
+              // =========================
+
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Column(
+                  crossAxisAlignment:
+                      CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      "STYLE",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 34,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    const Text(
+                      "理想のバイクを組み立てよう。",
+                      style: TextStyle(
+                        color: Colors.white54,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ],
                 ),
               ),
 
-              const SizedBox(height: 24),
+              const SizedBox(height: 28),
 
-              const Text(
-                "目指すスタイル",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-
-              const SizedBox(height: 12),
-
-              const Text(
-                "あなたの理想のスタイルに合わせて\nAIがカスタムを提案します。",
-                style: TextStyle(
-                  color: Colors.white60,
-                  fontSize: 18,
-                ),
-              ),
-
-              const SizedBox(height: 32),
+              // =========================
+              // スクロールエリア
+              // =========================
 
               Expanded(
-                child: ListView.builder(
-                  itemCount: styles.length,
-                  itemBuilder: (context, index) {
+                child: SingleChildScrollView(
+                  physics:
+                      const BouncingScrollPhysics(),
 
-                    final style = styles[index];
+                  child: Column(
+                    crossAxisAlignment:
+                        CrossAxisAlignment.start,
+                    children: [
+                      // =========================
+                      // シルエット
+                      // =========================
 
-                    final selected =
-                        selectedStyle == style;
+                      _buildSectionTitle(
+                        "SILHOUETTE",
+                      ),
 
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 10),
-
-                      child: Center(
-                        child: GestureDetector(
-
-                          onTap: () {
-                            setState(() {
-                              selectedStyle = style;
-                            });
-                          },
-
-                          child: SizedBox(
-                            width: buttonWidth,
-
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 180),
-
-                              height: 56,
-
-                              alignment: Alignment.center,
-
-                              decoration: BoxDecoration(
-                                color: selected
-                                    ? Colors.white
-                                    : const Color(0xFF1A1A1A),
-
-                                borderRadius:
-                                    BorderRadius.circular(16),
-
-                                border: Border.all(
-                                  color: selected
-                                      ? Colors.white
-                                      : Colors.white12,
-                                ),
-                              ),
-
-                              child: Text(
-                                style,
-                                style: TextStyle(
-                                  color: selected
-                                      ? Colors.black
-                                      : Colors.white,
-
-                                  fontSize: 17,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
+                      SizedBox(
+                        height: 170,
+                        child: ListView.separated(
+                          scrollDirection:
+                              Axis.horizontal,
+                          itemCount:
+                              silhouettes.length,
+                          separatorBuilder:
+                              (_, __) =>
+                                  const SizedBox(
+                            width: 12,
                           ),
+                          itemBuilder:
+                              (context, index) {
+                            final item =
+                                silhouettes[index];
+
+                            return SizedBox(
+                              width: 230,
+                              child: _buildVisual(
+                                title: item,
+                                icon: Icons
+                                    .two_wheeler,
+                                selected:
+                                    selectedSilhouette ==
+                                        item,
+                                onTap: () {
+                                  setState(() {
+                                    selectedSilhouette =
+                                        item;
+                                  });
+                                },
+                                height: 170,
+                              ),
+                            );
+                          },
                         ),
                       ),
-                    );
-                  },
+
+                      const SizedBox(height: 30),
+
+                      // =========================
+                      // タンク
+                      // =========================
+
+                      _buildSectionTitle(
+                        "TANK",
+                      ),
+
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildVisual(
+                              title:
+                                  tanks[0],
+                              imagePath: 'assets/images/tank_sportster.png',
+                              selected:
+                                  selectedTank ==
+                                      tanks[0],
+                              onTap: () {
+                                setState(() {
+                                  selectedTank =
+                                      tanks[0];
+                                });
+                              },
+                            ),
+                          ),
+
+                          const SizedBox(width: 12),
+
+                          Expanded(
+                            child: _buildVisual(
+                              title:
+                                  tanks[1],
+                              imagePath: 'assets/images/tank_peanut.png',
+                              selected:
+                                  selectedTank ==
+                                      tanks[1],
+                              onTap: () {
+                                setState(() {
+                                  selectedTank =
+                                      tanks[1];
+                                });
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 30),
+
+                      // =========================
+                      // ハンドル
+                      // =========================
+
+                      _buildSectionTitle(
+                        "HANDLEBAR",
+                      ),
+
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildVisual(
+                              title:
+                                  handlebars[0],
+                              imagePath: 'assets/images/handlebar_ape.png',
+                              selected:
+                                  selectedHandlebar ==
+                                      handlebars[0],
+                              onTap: () {
+                                setState(() {
+                                  selectedHandlebar =
+                                      handlebars[0];
+                                });
+                              },
+                            ),
+                          ),
+
+                          const SizedBox(width: 12),
+
+                          Expanded(
+                            child: _buildVisual(
+                              title:
+                                  handlebars[1],
+                              imagePath: 'assets/images/handlebar_pullback.png',
+                              selected:
+                                  selectedHandlebar ==
+                                      handlebars[1],
+                              onTap: () {
+                                setState(() {
+                                  selectedHandlebar =
+                                      handlebars[1];
+                                });
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 30),
+
+                      // =========================
+                      // フロントフォーク
+                      // =========================
+
+                      _buildSectionTitle(
+                        "FRONT FORK",
+                      ),
+
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildVisual(
+                              title:
+                                  frontForks[0],
+                              imagePath: 'assets/images/fork_long.png',
+                              selected:
+                                  selectedFrontFork ==
+                                      frontForks[0],
+                              onTap: () {
+                                setState(() {
+                                  selectedFrontFork =
+                                      frontForks[0];
+                                });
+                              },
+                            ),
+                          ),
+
+                          const SizedBox(width: 12),
+
+                          Expanded(
+                            child: _buildVisual(
+                              title:
+                                  frontForks[1],
+                              imagePath: 'assets/images/fork_normal.png',
+                              selected:
+                                  selectedFrontFork ==
+                                      frontForks[1],
+                              onTap: () {
+                                setState(() {
+                                  selectedFrontFork =
+                                      frontForks[1];
+                                });
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 30),
+                    ],
+                  ),
                 ),
               ),
 
-              const SizedBox(height: 8),
+              // =========================
+              // 生成ボタン
+              // =========================
 
               SizedBox(
                 width: double.infinity,
-                height: 56,
-
+                height: 58,
                 child: ElevatedButton(
+                  onPressed:
+                      canGenerate
+                          ? _goNext
+                          : null,
 
-                  onPressed: selectedStyle == null
-    ? null
-    : () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => ExperienceScreen(
-                manufacturer: widget.manufacturer,
-                bike: widget.bike,
-                year: widget.year,
-                style: selectedStyle!,
-            ),
-          ),
-        );
-      },
-
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: Colors.black,
-
-                    disabledBackgroundColor: Colors.white10,
-                    disabledForegroundColor: Colors.white38,
-
+                  style:
+                      ElevatedButton.styleFrom(
+                    backgroundColor:
+                        Colors.white,
+                    foregroundColor:
+                        Colors.black,
+                    disabledBackgroundColor:
+                        const Color(0xFF181818),
+                    disabledForegroundColor:
+                        Colors.white24,
                     elevation: 0,
-
-                    shape: RoundedRectangleBorder(
+                    shape:
+                        RoundedRectangleBorder(
                       borderRadius:
                           BorderRadius.circular(16),
                     ),
                   ),
 
                   child: const Text(
-                    "次へ",
+                    "このスタイルで生成",
                     style: TextStyle(
-                      fontSize: 18,
+                      fontSize: 17,
                       fontWeight: FontWeight.bold,
                     ),
                   ),

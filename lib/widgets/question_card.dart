@@ -13,10 +13,10 @@ class QuestionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.only(bottom: 10),
 
       child: InkWell(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(14),
 
         onTap: onTap,
 
@@ -24,18 +24,18 @@ class QuestionCard extends StatelessWidget {
           width: double.infinity,
 
           padding: const EdgeInsets.symmetric(
-            horizontal: 18,
-            vertical: 14,
+            horizontal: 14,
+            vertical: 12,
           ),
 
           decoration: BoxDecoration(
             color: Colors.white.withOpacity(0.10),
 
             borderRadius:
-                BorderRadius.circular(16),
+                BorderRadius.circular(14),
 
             border: Border.all(
-              color: Colors.white.withOpacity(0.18),
+              color: Colors.white.withOpacity(0.16),
               width: 1,
             ),
           ),
@@ -47,8 +47,8 @@ class QuestionCard extends StatelessWidget {
               // =========================
 
               Container(
-                width: 32,
-                height: 32,
+                width: 30,
+                height: 30,
 
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.10),
@@ -58,11 +58,11 @@ class QuestionCard extends StatelessWidget {
                 child: const Icon(
                   Icons.auto_awesome,
                   color: Colors.white70,
-                  size: 16,
+                  size: 15,
                 ),
               ),
 
-              const SizedBox(width: 14),
+              const SizedBox(width: 12),
 
               // =========================
               // 質問
@@ -74,16 +74,19 @@ class QuestionCard extends StatelessWidget {
 
                   textAlign: TextAlign.left,
 
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 15,
+                    fontSize: 14,
                     fontWeight: FontWeight.w500,
-                    height: 1.4,
+                    height: 1.35,
                   ),
                 ),
               ),
 
-              const SizedBox(width: 10),
+              const SizedBox(width: 8),
 
               // =========================
               // 矢印
@@ -92,7 +95,7 @@ class QuestionCard extends StatelessWidget {
               const Icon(
                 Icons.arrow_forward_ios,
                 color: Colors.white38,
-                size: 14,
+                size: 12,
               ),
             ],
           ),

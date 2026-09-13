@@ -140,13 +140,28 @@ class FirestoreService {
   // =========================
 
   Future<void> saveUser({
-    required String manufacturer,
-    required String bike,
-    required String year,
-    required String style,
-    required String experience,
-  }) async {
-    await _firestore.collection("users").add({
+  required String manufacturer,
+  required String bike,
+  required String year,
+  required String style,
+  required String experience,
+}) async {
+
+  print("========== SAVE USER START ==========");
+
+  print("manufacturer: $manufacturer");
+  print("bike: $bike");
+  print("year: $year");
+  print("style: $style");
+  print("experience: $experience");
+
+  try {
+
+    print("BEFORE FIRESTORE ADD");
+
+    final doc = await _firestore
+        .collection("users")
+        .add({
       "manufacturer": manufacturer,
       "bike": bike,
       "year": year,
@@ -154,7 +169,21 @@ class FirestoreService {
       "experience": experience,
       "createdAt": FieldValue.serverTimestamp(),
     });
+
+    print("AFTER FIRESTORE ADD");
+    print("USER DOCUMENT ID: ${doc.id}");
+    print("========== SAVE USER SUCCESS ==========");
+
+  } catch (e, stackTrace) {
+
+    print("========== FIRESTORE SAVE ERROR ==========");
+    print("ERROR: $e");
+    print("STACK TRACE:");
+    print(stackTrace);
+
+    rethrow;
   }
+}
 
   // =========================
   // 最新ユーザー情報取得

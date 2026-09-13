@@ -8,27 +8,30 @@ class AiTypingIndicator extends StatefulWidget {
   });
 
   @override
-  State<AiTypingIndicator> createState() => _AiTypingIndicatorState();
+  State<AiTypingIndicator> createState() =>
+      _AiTypingIndicatorState();
 }
 
-class _AiTypingIndicatorState extends State<AiTypingIndicator> {
-  int dotCount = 1;
+class _AiTypingIndicatorState
+    extends State<AiTypingIndicator> {
   Timer? timer;
+
+  int activeDot = 0;
 
   @override
   void initState() {
     super.initState();
 
     timer = Timer.periodic(
-      const Duration(milliseconds: 400),
+      const Duration(milliseconds: 580),
       (_) {
         if (!mounted) return;
 
         setState(() {
-          dotCount++;
+          activeDot++;
 
-          if (dotCount > 3) {
-            dotCount = 1;
+          if (activeDot > 2) {
+            activeDot = 0;
           }
         });
       },
@@ -44,25 +47,48 @@ class _AiTypingIndicatorState extends State<AiTypingIndicator> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(
+        bottom: 12,
+      ),
       alignment: Alignment.centerLeft,
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 18,
-          vertical: 14,
-        ),
-        decoration: BoxDecoration(
-          color: Colors.white10,
-          borderRadius: BorderRadius.circular(18),
-        ),
-        child: Text(
-          "🤖  ${"●" * dotCount}",
-          style: const TextStyle(
-            color: Colors.white70,
-            fontSize: 16,
-            letterSpacing: 4,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildDot(0),
+
+          const SizedBox(
+            width: 6,
           ),
-        ),
+
+          _buildDot(1),
+
+          const SizedBox(
+            width: 6,
+          ),
+
+          _buildDot(2),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDot(int index) {
+    final bool active =
+        activeDot == index;
+
+    return AnimatedContainer(
+      duration: const Duration(
+        milliseconds: 390,
+      ),
+
+      width: active ? 8 : 6,
+      height: active ? 8 : 6,
+
+      decoration: BoxDecoration(
+        color: active
+            ? Colors.white
+            : Colors.white30,
+        shape: BoxShape.circle,
       ),
     );
   }
